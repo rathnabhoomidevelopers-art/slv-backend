@@ -19,23 +19,14 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "")
   .filter(Boolean);
 
 const corsOptions = {
-  origin: (origin, cb) => {
-    // allow server-to-server / tools (no origin)
-    if (!origin) return cb(null, true);
-
-    // allow only whitelisted frontends
-    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-
-    // IMPORTANT: don't throw error (preflight needs CORS headers)
-    return cb(null, false);
-  },
+  origin: true,              // reflect request origin
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
-  credentials: false, // you are NOT using cookies
+  credentials: false,
 };
 
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions)); // ✅ REQUIRED FOR PREFLIGHT
+app.options("*", cors(corsOptions));
 
 
 // ✅ Rate limiters (note: serverless resets sometimes; ok for basic use)
@@ -121,5 +112,4 @@ app.get("/get-leads", apiLimiter, async (req, res) => {
   }
 });
 
-// ✅ Vercel export (NO listen)
 module.exports = app;
