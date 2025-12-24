@@ -26,7 +26,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 
 // ✅ Rate limiters (note: serverless resets sometimes; ok for basic use)
