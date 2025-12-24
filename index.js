@@ -12,28 +12,31 @@ app.use(helmet());
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 app.use(express.json({ limit: "20kb" }));
 
-// ✅ CORS
+//  CORS
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
+const corsOptions = {
+  origin: (origin, cb) => {
+    // allow server-to-server / tools (no origin)
+    if (!origin) return cb(null, true);
 
-      // allow all in dev if not set
-      if (process.env.NODE_ENV !== "production" && ALLOWED_ORIGINS.length === 0) {
-        return cb(null, true);
-      }
+    // allow only whitelisted frontends
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
 
-      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+    // IMPORTANT: don't throw error (preflight needs CORS headers)
+    return cb(null, false);
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+  credentials: false, // you are NOT using cookies
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ REQUIRED FOR PREFLIGHT
+
 
 // ✅ Rate limiters (note: serverless resets sometimes; ok for basic use)
 const apiLimiter = rateLimit({
