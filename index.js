@@ -35,7 +35,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // ✅ REQUIRED FOR PREFLIGHT
+app.options("/*", cors(corsOptions)); // ✅ REQUIRED FOR PREFLIGHT
 
 
 // ✅ Rate limiters (note: serverless resets sometimes; ok for basic use)
